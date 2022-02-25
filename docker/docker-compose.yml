@@ -1,0 +1,51 @@
+version: "3"
+
+services:
+  flarum:
+    image: mondedie/flarum:stable
+    command: sh -c "cd /flarum/app/ && composer install && /usr/local/bin/startup"
+    environment:
+      DEBUG: ${DEBUG:-false}
+      APP_PROTOCOL: ${APP_PROTOCOL:-http}
+      FORUM_URL: ${APP_HOSTNAME:-127.0.0.1}
+      FLARUM_PORT: ${FLARUM_PORT}
+      DB_HOST: db
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      DB_PREF: ${DB_PREF}
+      FLARUM_ADMIN_USER: ${FLARUM_ADMIN_USER}
+      FLARUM_ADMIN_PASS: ${FLARUM_ADMIN_PASS}
+      FLARUM_ADMIN_MAIL: ${FLARUM_ADMIN_MAIL}
+      FLARUM_TITLE: ${FLARUM_TITLE}
+      UID: ${UID:-991}
+      GID: ${GID:-991}
+    restart: always
+    volumes:
+      - ../../flarum/assets:/flarum/app/public/assets
+      # - ../../flarum/public:/flarum/app/public
+      - ../../flarum/extensions:/flarum/app/extensions
+      - ../../flarum/vendor:/flarum/app/vendor
+      - ../../flarum/storage/logs:/flarum/app/storage/logs
+      - ../../flarum/nginx:/etc/nginx/flarum
+      - ../../flarum/composer.json:/flarum/app/composer.json
+      - ../../flarum/composer.lock:/flarum/app/composer.lock
+    ports:
+      - 8088:${FLARUM_PORT}
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.5
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-db_root_pass}
+      MYSQL_DATABASE: ${DB_NAME:-flarum}
+      MYSQL_USER: ${DB_USER:-db_user}
+      MYSQL_PASSWORD: ${DB_PASS:-db_user_pass}
+    restart: always
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata:
+
